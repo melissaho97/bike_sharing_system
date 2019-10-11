@@ -1,0 +1,41 @@
+from tkinter import *
+
+window =Tk()
+window.title('cMT-Bike')
+window.geometry('1024x4768')
+
+menubar = Menu(window)
+
+filemenu = Menu(menubar, tearoff=0)
+
+menubar.add_cascade(label='File', menu=filemenu)
+
+filemenu.add_command(label = 'City Management')
+filemenu.add_separator() 
+filemenu.add_command(label = 'Location Management')
+filemenu.add_separator() 
+filemenu.add_command(label = 'Bike Management')
+filemenu.add_separator() 
+filemenu.add_command(label = 'Role Management')
+filemenu.add_separator() 
+filemenu.add_command(label = 'Sales Report')
+
+window.config(menu=menubar)
+
+a = Button(window, text = 'City\nManagement')
+a.place(x = 138.55, y = 222, width = 218.45, height = 127.99)
+
+b = Button(window, text = 'Location\nManagement')
+b.place(x = 401.55, y = 222, width = 218.45, height = 127.99)
+
+c = Button(window, text = 'Bike\nManagement')
+c.place(x = 667.55, y = 222, width = 218.45, height = 127.99)
+
+d = Button(window, text = 'Account\nManagement')
+d.place(x = 138.55, y = 399, width = 218.45, height = 127.99)
+
+d = Button(window, text = 'Account\nManagement')
+d.place(x = 402.55, y = 399, width = 218.45, height = 127.99)
+
+
+window.mainloop()

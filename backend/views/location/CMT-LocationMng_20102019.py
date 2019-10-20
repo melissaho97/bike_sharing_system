@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Oct 12 16:41:54 2019
+Created on Sun Oct 20 13:55:37 2019
 
 @author: pat
 """
+
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 import pandas as pd
+import pymysql
+import pymysql
 from pandastable import Table, TableModel
 
 def init_styleSheet():
@@ -30,7 +34,7 @@ def init_styleSheet():
     styleDict["TabHeaderBgColor"] = "#4B96E9"
     return(styleDict)
     
-def PopUpMsg(msg):
+def popupMsg(msg):
         popup = tk.Tk()
         popup.title(styleDict["Title"])
         msg_label = tk.Label(popup, text = msg)
@@ -38,6 +42,28 @@ def PopUpMsg(msg):
         done_button = tk.Button(popup, text="Done", command = popup.destroy)
         done_button.pack()
         popup.mainloop()
+        
+def chkNumber(character):
+    if character.isdigit():
+        return True
+    else:
+        return False
+    
+def connectDB():
+    host = 'localhost'
+    user = 'root'
+    password = '1234'
+    db = 'BikeSharedSystem' 
+    try:
+        connection = pymysql.connect(host, user, password, db)
+        #print("Connect to DB Success")
+    except pymysql.InternalError as e:
+        popupMsg(e)
+        #print("Connection Error", e)
+    return connection
+
+def disconnectDB(connection):
+    connection.close()
     
 class BackEndApp(tk.Tk):
     def __init__(self):
@@ -99,18 +125,17 @@ class LocationMngPage(tk.Frame):
         table_frame.pack(fill = tk.BOTH, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         
         #Get All Locations
-        #with sqlite3.connect("BikeSharedSystem.db") as db:
-        # cursor = db.cursor()
-        #cursor.execute(" SELECT * FROM location ORDER BY Updated_At DESC ")
-        #for x in cursor.fetchall():
-        # print(x)
-        #db.close()
-        location_data = {"ID":[1,2,3], "Location Name":["Zone A", "Zone B", "Zone C"], 
-                         "City":["Glasgow","Glasgow","Glasgow"], "Slot":[10,10,20], "Status":["Active","Active","Active"],
-                         "Last Updated Date":["22/10/2019 22:35","22/10/2019 22:36","22/10/2019 22:37"], 
-                         "Last Updated By":["Operator 1","Operator 1","Operator 1"]}
-        
-        location_df = pd.DataFrame(location_data)
+        connection = connectDB()
+        cursor = connection.cursor()
+        query = '''SELECT l.ID ID, l.Zone_Name `Location Name`, c.City_Name `City Name`, 
+                                l.Slot, l.`Status`, l.Updated_At `Last Updated At`, o.Username `Last Updated By`
+                                FROM location AS l
+                                INNER JOIN city AS c ON l.City_ID = c.ID
+                                INNER JOIN operator_manager AS o ON l.Last_Operator_ID = o.ID
+                                ORDER BY l.Updated_At DESC;'''
+        sql = pd.read_sql_query(query, connection, params = None)
+        location_df = pd.DataFrame(sql, columns = ['ID','Location Name', 'City Name', 'Slot', 'Status', 'Last Updated At', 'Last Updated By'])
+        disconnectDB(connection)
         
         #Set Data Table Frame
         location_table = Table(table_frame, dataframe = location_df, showstatusbar = True)
@@ -139,7 +164,8 @@ class LocationAddPage(tk.Frame):
         location_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         location_name_label = tk.Label(location_name_frame, text = "Location Name: ", width = styleDict["labelLen"], anchor = tk.W)
         location_name_label.pack(side = tk.LEFT)
-        location_name_input = tk.Entry(location_name_frame)
+        self.var_location_name = StringVar()
+        location_name_input = tk.Entry(location_name_frame, textvariable = self.var_location_name)
         location_name_input.pack(fill = tk.X)
         
         #Set City Name Frame
@@ -147,9 +173,19 @@ class LocationAddPage(tk.Frame):
         city_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         city_name_label = tk.Label(city_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
         city_name_label.pack(side = tk.LEFT)
-        #***** Query City Name from DB
-        city_list = ["Glasgow", "Aberdeen"]
-        city_name_input = ttk.Combobox(city_name_frame, values = city_list)
+        
+        #Get City from DB
+        connection = connectDB()
+        cursor = connection.cursor()
+        query = '''SELECT City_Name `City Name` FROM city ORDER BY City_Name;'''
+        cursor.execute(query)
+        city_list = []
+        for row in cursor.fetchall():
+            city_list.append(row)
+        disconnectDB(connection)
+        
+        self.var_city_name = StringVar()
+        city_name_input = ttk.Combobox(city_name_frame, values = city_list, state='readonly', textvariable = self.var_city_name)
         city_name_input.current(0)
         city_name_input.pack(fill = tk.X)
         
@@ -159,7 +195,10 @@ class LocationAddPage(tk.Frame):
         slot_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         slot_label = tk.Label(slot_frame, text = "Slot: ", width = styleDict["labelLen"], anchor = tk.W)
         slot_label.pack(side = tk.LEFT)
-        slot_input = tk.Entry(slot_frame)
+        self.var_slot = StringVar()
+        slot_input = tk.Entry(slot_frame, textvariable = self.var_slot)
+        slot_register = slot_frame.register(chkNumber)
+        slot_input.config(validate = "key", validatecommand = (slot_register, "%P"))
         slot_input.pack(fill = tk.X)
         
         #Set Status Frame
@@ -168,7 +207,8 @@ class LocationAddPage(tk.Frame):
         status_label = tk.Label(status_frame, text = "Status: ", width = styleDict["labelLen"], anchor = tk.W)
         status_label.pack(side = tk.LEFT)
         status_list = ["Active", "Inactive"]
-        status_input = ttk.Combobox(status_frame, values = status_list)
+        self.var_status = StringVar()
+        status_input = ttk.Combobox(status_frame, values = status_list, state='readonly', textvariable = self.var_status)
         status_input.current(0)
         status_input.pack(fill = tk.X)
         
@@ -179,25 +219,46 @@ class LocationAddPage(tk.Frame):
                                 command = lambda: master.switch_frame(LocationMngPage))
         back_button.pack(side = tk.RIGHT)
         confirm_button = tk.Button(act_button_frame, text = "Confirm", width = styleDict["buttonWidth"], 
-                                command = self.AddLocation)
+                                command = self.addLocation)
         confirm_button.pack(side = tk.RIGHT, fill = tk.X, padx = styleDict["inlinePadding"])
         
-    def AddLocation(self):
-        self.ValidateLocation()
-        #Insert Data into DB
-        result = True
+    def addLocation(self):
+        #Get All Data From User Control
+        tmp_location_name = self.var_location_name.get()
+        tmp_city_name = self.var_city_name.get()
+        tmp_slot_input = int(self.var_slot.get())
+        tmp_status_input = self.var_status.get()
+        tmp_operator_ID = 1
+        
+        try:
+            #Get More Data from DB
+            connection = connectDB()
+            cursor = connection.cursor()
+            query = '''SELECT ID, City_Name FROM city WHERE `City_Name` = %s;'''
+            cursor.execute(query, tmp_city_name)
+            for row in cursor.fetchall():
+                tmp_city_id = row[0]
+            disconnectDB(connection)
+        
+            #Insert Data into DB
+            connection = connectDB()
+            cursor = connection.cursor()
+            query = '''INSERT INTO location (Zone_Name, Slot, `Status`, Created_At, Updated_At, City_ID, Last_Operator_ID) VALUES(%s, %s, %s, NOW(), NOW(), %s, %s);'''
+            query_param = (tmp_location_name, tmp_slot_input, tmp_status_input, tmp_city_id, tmp_operator_ID)
+            cursor.execute(query, query_param)
+            connection.commit()
+            disconnectDB(connection)
+            result = True
+        except:
+            result = False
+        
         if result:
             msg = "Location is added successfully"
         else:
             msg = "Some thing went wrong. Sorry for an inconvenience"
-        PopUpMsg(msg)
+        popupMsg(msg)
     
-    def ValidateLocation(self):
-        print("ValidateLocation")
-        
-        
-        
-    
+
 class LocationEditPage(tk.Frame):
     def __init__(self, master):
         
@@ -221,10 +282,22 @@ class LocationEditPage(tk.Frame):
         location_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         location_name_label = tk.Label(location_name_frame, text = "Location Name: ", width = styleDict["labelLen"], anchor = tk.W)
         location_name_label.pack(side = tk.LEFT)
-        #***** Query Location Name from DB
-        location_list = ["Zone A", "Zone B"]
-        location_name_input = ttk.Combobox(location_name_frame, values = location_list)
-        location_name_input.current(0)
+        
+        #Get Location from DB
+        connection = connectDB()
+        cursor = connection.cursor()
+        query = '''SELECT ID, Zone_Name `Location Name` FROM location ORDER BY Zone_Name;'''
+        cursor.execute(query)
+        location_list = []
+        for row in cursor.fetchall():
+            location_list.append(row[1])
+        disconnectDB(connection)
+
+        #Set Location Combobox
+        self.var_location_name = StringVar()
+        location_name_input = ttk.Combobox(location_name_frame, values = location_list, state='readonly', textvariable = self.var_location_name)
+        # >> Bind onchange event to location combobox
+        location_name_input.bind("<<ComboboxSelected>>", self.callback)
         location_name_input.pack(fill = tk.X)
         
         #Set City Name Frame
@@ -232,19 +305,32 @@ class LocationEditPage(tk.Frame):
         city_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         city_name_label = tk.Label(city_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
         city_name_label.pack(side = tk.LEFT)
-        #***** Query City Name from DB
-        city_list = ["Glasgow", "Aberdeen"]
-        city_name_input = ttk.Combobox(city_name_frame, values = city_list)
-        city_name_input.current(0)
+        
+        #Get City from DB
+        connection = connectDB()
+        cursor = connection.cursor()
+        query = '''SELECT City_Name `City Name` FROM city ORDER BY City_Name;'''
+        cursor.execute(query)
+        city_list = []
+        for row in cursor.fetchall():
+            city_list.append(row)
+        disconnectDB(connection)
+
+        #Set City Combobox
+        self.var_city_name = StringVar()
+        city_name_input = ttk.Combobox(city_name_frame, values = city_list, state='readonly', textvariable = self.var_city_name)
         city_name_input.pack(fill = tk.X)
         
         
         #Set Slot Frame
         slot_frame = tk.Frame(self)
         slot_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
+        self.var_slot = StringVar()
         slot_label = tk.Label(slot_frame, text = "Slot: ", width = styleDict["labelLen"], anchor = tk.W)
         slot_label.pack(side = tk.LEFT)
-        slot_input = tk.Entry(slot_frame)
+        slot_input = tk.Entry(slot_frame, textvariable = self.var_slot)
+        slot_register = slot_frame.register(chkNumber)
+        slot_input.config(validate = "key", validatecommand = (slot_register, "%P"))
         slot_input.pack(fill = tk.X)
         
         #Set Status Frame
@@ -253,8 +339,8 @@ class LocationEditPage(tk.Frame):
         status_label = tk.Label(status_frame, text = "Status: ", width = styleDict["labelLen"], anchor = tk.W)
         status_label.pack(side = tk.LEFT)
         status_list = ["Active", "Inactive"]
-        status_input = ttk.Combobox(status_frame, values = status_list)
-        status_input.current(0)
+        self.var_status = StringVar()
+        status_input = ttk.Combobox(status_frame, values = status_list, state='readonly', textvariable = self.var_status)
         status_input.pack(fill = tk.X)
         
         #Set Action Buttion Frame
@@ -264,18 +350,66 @@ class LocationEditPage(tk.Frame):
                                 command = lambda: master.switch_frame(LocationMngPage))
         back_button.pack(side = tk.RIGHT)
         confirm_button = tk.Button(act_button_frame, text = "Confirm", width = styleDict["buttonWidth"], 
-                                command = self.EditLocation)
+                                command = self.editLocation)
         confirm_button.pack(side = tk.RIGHT, fill = tk.X, padx = styleDict["inlinePadding"])
 
+    def callback(self, event):
+        self.setCurrentLocData()
+        
+    def setCurrentLocData(self):
+        connection = connectDB()
+        cursor = connection.cursor()
+        query = '''SELECT l.Zone_Name `Location Name`, c.City_Name `City Name`, l.Slot, l.`Status`
+                                FROM location AS l
+                                INNER JOIN city AS c ON l.City_ID = c.ID
+                                WHERE l.Zone_Name = %s;'''
+        cursor.execute(query, self.var_location_name.get())
+        for row in cursor.fetchall():
+            self.var_city_name.set(row[1])
+            self.var_slot.set(row[2])
+            self.var_status.set(row[3])
     
-    def EditLocation(self):
-        #Update Data into DB
-        result = True
+    def editLocation(self):
+        #Get All Data From User Control
+        tmp_location_name = self.var_location_name.get()
+        tmp_city_name = self.var_city_name.get()
+        tmp_slot_input = int(self.var_slot.get())
+        tmp_status_input = self.var_status.get()
+        tmp_operator_ID = 1
+        
+        try:
+            #Get More Data from DB
+            connection = connectDB()
+            cursor = connection.cursor()
+            # >> Get Location ID
+            query = '''SELECT ID, Zone_Name FROM location WHERE `Zone_Name` = %s;'''
+            cursor.execute(query, tmp_location_name)
+            for row in cursor.fetchall():
+                tmp_location_id = row[0]            
+            # >> Get City ID
+            query = '''SELECT ID, City_Name FROM city WHERE `City_Name` = %s;'''
+            cursor.execute(query, tmp_city_name)
+            for row in cursor.fetchall():
+                tmp_city_id = row[0]
+            disconnectDB(connection)
+        
+            #Update Data into DB
+            connection = connectDB()
+            cursor = connection.cursor()
+            query = '''UPDATE location SET Slot = %s, `Status` = %s, Updated_At = NOW(), City_ID = %s, Last_Operator_ID = %s WHERE ID = %s;'''
+            query_param = (tmp_slot_input, tmp_status_input, tmp_city_id, tmp_operator_ID, tmp_location_id)
+            cursor.execute(query, query_param)
+            connection.commit()
+            disconnectDB(connection)
+            result = True
+        except:
+            result = False
+        
         if result:
             msg = "Location is updated successfully"
         else:
             msg = "Some thing went wrong. Sorry for an inconvenience"
-        PopUpMsg(msg)
+        popupMsg(msg)
 
 if __name__ == "__main__":
     styleDict = init_styleSheet()

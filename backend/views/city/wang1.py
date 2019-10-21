@@ -26,10 +26,5 @@ button1 = Button(text = "Confirm", command = city_name)
 button1.place(x=373 , y=540, width = 278, height = 55)
 button1["bg"] = "#A3A3A3"
 
-number = tk.StringVar()
-numberChosen = ttk.Combobox(win, width=12, textvariable=number, state='readonly')
-numberChosen['values'] = (1, 2, 4, 42, 100) # 设置下拉列表的值
-numberChosen.grid(column=1, row=1) # 设置其在界面中出现的位置 column代表列 row 代表行
-numberChosen.current(4) # 设置下拉列表默认显示的值，0为numberChosen['values'] 的下标值
 
 window.mainloop()

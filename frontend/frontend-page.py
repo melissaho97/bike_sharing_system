@@ -3,9 +3,15 @@ from tkinter import *
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import webbrowser
+import tkinter.messagebox
+import pymysql
 
 def open_url(event):
     webbrowser.open("http://www.baidu.com", new=0)
+def hit_me():
+    Bike_ID = textbox1.get()
+    print(tkinter.messagebox.askquestion(title='cMT-Bike', message= Bike_ID))
+
 
 window = Tk()
 window.geometry("1024x768")
@@ -35,7 +41,7 @@ link["fg"]= "#0525F9"
 link.bind("<Button-1>", open_url)
 
 ft4 = tkFont.Font(family='Arial', size=34, weight=tkFont.BOLD)
-button1 = Button(text = "Confirm", font = ft4)
+button1 = Button(text = "Confirm", font = ft4, command = hit_me)
 button1.place(x=79 , y=514, width = 887, height = 90)
 button1["bg"] = "#F5F1F1"
 img_open = Image.open('fronted-1.png')
@@ -43,6 +49,7 @@ img_png = ImageTk.PhotoImage(img_open)
 ft5 = tkFont.Font(family='Arial', size=24, weight=tkFont.NORMAL)
 button2 = Button(text = "Scan QR Code", compound = 'bottom', font = ft5, image = img_png)
 button2.place(x=418 , y=306, width = 209, height = 150)
+
 
 
 window.mainloop()

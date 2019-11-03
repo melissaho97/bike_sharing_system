@@ -102,20 +102,21 @@ class CityMngPage(tk.Frame):
         table_frame = tk.Frame(self)
         table_frame.pack(fill = tk.BOTH, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
 
-        #Get All Citys
+        #Get All City
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT l.ID ID, l.City_Name `City Name`,
-                                l.Status , l.Created_At `Created_At`, l.Updated_At, l.Last_Operator_ID
-                                FROM city AS l'''
+        query = '''SELECT c.ID ID, c.City_Name `City Name`, c.Status , c.Created_At `Created At`, c.Updated_At `Updated At`, o.Username `Last Operator`
+                            FROM city AS c
+			                INNER JOIN operator_manager AS o
+			                ON c.Last_Operator_ID = o.ID'''
         sql = pd.read_sql_query(query, connection, params = None)
-        City_df = pd.DataFrame(sql, columns = ['ID','City Name', 'Status', 'Created_At', 'Updated_At','Last_Operator_ID'])
+        city_df = pd.DataFrame(sql, columns = ['ID', 'City Name', 'Status', 'Created At', 'Updated At','Last Operator'])
         disconnectDB(connection)
 
         #Set Data Table Frame (Display table only have a data)
-        if not City_df.empty:
-            City_table = Table(table_frame, dataframe = City_df, showstatusbar = True)
-            City_table.show()
+        if not city_df.empty:
+            city_table = Table(table_frame, dataframe = city_df, showstatusbar = True)
+            city_table.show()
 
 class CityAddPage(tk.Frame):
     def __init__(self, master):
@@ -139,13 +140,13 @@ class CityAddPage(tk.Frame):
         menu_label.pack(side = tk.LEFT)
 
         #Set City Name Frame
-        City_name_frame = tk.Frame(self)
-        City_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
-        City_name_label = tk.Label(City_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
-        City_name_label.pack(side = tk.LEFT)
-        self.var_City_name = StringVar()
-        City_name_input = tk.Entry(City_name_frame, textvariable = self.var_City_name)
-        City_name_input.pack(fill = tk.X)
+        city_name_frame = tk.Frame(self)
+        city_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
+        city_name_label = tk.Label(city_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
+        city_name_label.pack(side = tk.LEFT)
+        self.var_city_name = StringVar()
+        city_name_input = tk.Entry(city_name_frame, textvariable = self.var_city_name)
+        city_name_input.pack(fill = tk.X)
 
         # Set City status
         status_frame = tk.Frame(self)
@@ -155,7 +156,6 @@ class CityAddPage(tk.Frame):
         status_list = ["Active", "Inactive"]
         self.var_status = StringVar()
         status_input = ttk.Combobox(status_frame, values=status_list, state='readonly', textvariable=self.var_status)
-        status_input.current(0)
         status_input.pack(fill=tk.X)
 
         #Set Action Buttion Frame
@@ -170,7 +170,7 @@ class CityAddPage(tk.Frame):
 
     def addCity(self):
         #Get All Data From User Control
-        tmp_City_name = self.var_City_name.get()
+        tmp_city_name = self.var_city_name.get()
         tmp_status_input = self.var_status.get()
         tmp_operator_ID = 1
 
@@ -178,8 +178,8 @@ class CityAddPage(tk.Frame):
             #Insert Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''INSERT INTO city ('City_Name', 'Status', `Created_At`, `Updated_At`, 'Last_Operator') VALUES(%s, %s, NOW(), NOW(),%s);'''
-            query_param = (tmp_City_name, tmp_status_input, tmp_operator_ID)
+            query = '''INSERT INTO city (City_Name, `Status`, `Created_At`, `Updated_At`, Last_Operator_ID) VALUES(%s, %s, NOW(), NOW(),%s);'''
+            query_param = (tmp_city_name, tmp_status_input, tmp_operator_ID)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)
@@ -216,27 +216,27 @@ class CityEditPage(tk.Frame):
         menu_label.pack(side = tk.LEFT)
 
         #Set City Name Frame
-        City_name_frame = tk.Frame(self)
-        City_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
-        City_name_label = tk.Label(City_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
-        City_name_label.pack(side = tk.LEFT)
+        city_name_frame = tk.Frame(self)
+        city_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
+        city_name_label = tk.Label(city_name_frame, text = "City Name: ", width = styleDict["labelLen"], anchor = tk.W)
+        city_name_label.pack(side = tk.LEFT)
 
         #Get City from DB
         connection = connectDB()
         cursor = connection.cursor()
         query = '''SELECT ID, City_Name `City Name` FROM city ORDER BY City_Name;'''
         cursor.execute(query)
-        City_list = []
+        city_list = []
         for row in cursor.fetchall():
-            City_list.append(row[1])
+            city_list.append(row[1])
         disconnectDB(connection)
 
         #Set City Combobox
-        self.var_City_name = StringVar()
-        City_name_input = ttk.Combobox(City_name_frame, values = City_list, state='readonly', textvariable = self.var_City_name)
+        self.var_city_name = StringVar()
+        city_name_input = ttk.Combobox(city_name_frame, values = city_list, state='readonly', textvariable = self.var_city_name)
         # >> Bind onchange event to City combobox
-        City_name_input.bind("<<ComboboxSelected>>", self.callback)
-        City_name_input.pack(fill = tk.X)
+        city_name_input.bind("<<ComboboxSelected>>", self.callback)
+        city_name_input.pack(fill = tk.X)
 
         # Set Status Frame
         status_frame = tk.Frame(self)
@@ -265,15 +265,15 @@ class CityEditPage(tk.Frame):
         connection = connectDB()
         cursor = connection.cursor()
         query = '''SELECT l.City_Name `City Name`, l.Slot, l.`Status`
-                                FROM City AS l;'''
-        cursor.execute(query, self.var_City_name.get())
+                                FROM city AS l;'''
+        cursor.execute(query, self.var_city_name.get())
         for row in cursor.fetchall():
-            self.var_City_name.set(row[1])
+            self.var_city_name.set(row[1])
             self.var_status.set(row[2])
 
     def editCity(self):
         #Get All Data From User Control
-        tmp_City_name = self.var_City_name.get()
+        tmp_city_name = self.var_city_name.get()
         tmp_status_input = self.var_status.get()
         tmp_operator_ID = 1
 
@@ -283,16 +283,16 @@ class CityEditPage(tk.Frame):
             cursor = connection.cursor()
             # >> Get City ID
             query = '''SELECT ID, City_Name FROM city WHERE `City_Name` = %s;'''
-            cursor.execute(query, tmp_City_name)
+            cursor.execute(query, tmp_city_name)
             for row in cursor.fetchall():
-                tmp_City_id = row[0]
+                tmp_city_id = row[0]
             disconnectDB(connection)
 
             #Update Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''UPDATE City SET 'Status' = %s, 'Updated_At' = NOW(), 'Last_Operator_ID' = %s WHERE ID = %s;'''
-            query_param = (tmp_status_input, tmp_City_id, tmp_operator_ID, tmp_day_price_input)
+            query = '''UPDATE city SET Status = %s, Updated_At = NOW(), Last_Operator_ID = %s WHERE ID = %s;'''
+            query_param = (tmp_status_input,  tmp_operator_ID, tmp_city_id)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)

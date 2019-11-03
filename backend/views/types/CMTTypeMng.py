@@ -36,13 +36,13 @@ def init_styleSheet():
 
 
 def popupMsg(msg):
-        popup = tk.Tk()
-        popup.title(styleDict["Title"])
-        msg_label = tk.Label(popup, text = msg)
-        msg_label.pack()
-        done_button = tk.Button(popup, text="Done", command = popup.destroy)
-        done_button.pack()
-        popup.mainloop()
+    popup = tk.Tk()
+    popup.title(styleDict["Title"])
+    msg_label = tk.Label(popup, text = msg)
+    msg_label.pack()
+    done_button = tk.Button(popup, text="Done", command = popup.destroy)
+    done_button.pack()
+    popup.mainloop()
 
 def chkNumber(character):
     if character.isdigit():
@@ -92,10 +92,10 @@ class TypeMngPage(tk.Frame):
         act_button_frame = tk.Frame(self)
         act_button_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         edit_button = tk.Button(act_button_frame, text = "Edit", width = styleDict["buttonWidth"],
-                                command = lambda: master.switch_frame(typeEditPage))
+                                command = lambda: master.switch_frame(TypeEditPage))
         edit_button.pack(side = tk.RIGHT)
         add_button = tk.Button(act_button_frame, text = "Add", width = styleDict["buttonWidth"],
-                                command = lambda: master.switch_frame(typeAddPage))
+                                command = lambda: master.switch_frame(TypeAddPage))
         add_button.pack(side = tk.RIGHT, padx = styleDict["inlinePadding"])
 
         #Create Data Table Frame
@@ -105,9 +105,9 @@ class TypeMngPage(tk.Frame):
         #Get All types
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT l.ID ID, l.Type_Name `Type Name`,
-                                l.Fixed_Price 'Fixed_Price', l.Add_Price `Add-Ons Price`, l.Day_Price `Day Price`
-                                FROM type AS l'''
+        query = '''SELECT t.ID ID, t.Type_Name `Type Name`,
+                                t.Fixed_Price 'Fixed_Price', t.Add_Price `Add-Ons Price`, t.Day_Price `Day Price`
+                                FROM type AS t'''
         sql = pd.read_sql_query(query, connection, params = None)
         type_df = pd.DataFrame(sql, columns = ['ID','Type Name', 'Fixed Price', 'Add-Ons Price', 'Day Price'])
         disconnectDB(connection)
@@ -117,7 +117,7 @@ class TypeMngPage(tk.Frame):
             type_table = Table(table_frame, dataframe = type_df, showstatusbar = True)
             type_table.show()
 
-class typeAddPage(tk.Frame):
+class TypeAddPage(tk.Frame):
     def __init__(self, master):
 
         #Initialize Frame
@@ -150,35 +150,35 @@ class typeAddPage(tk.Frame):
         #Set Fixed Price Frame
         fixed_price_frame = tk.Frame(self)
         fixed_price_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
-        fixed_price_label = tk.Label(slot_frame, text = "Fixed Price: ", width = styleDict["labelLen"], anchor = tk.W)
+        fixed_price_label = tk.Label(fixed_price_frame, text = "Fixed Price: ", width = styleDict["labelLen"], anchor = tk.W)
         fixed_price_label.pack(side = tk.LEFT)
         self.var_fixed_price = StringVar()
-        fixed_price_input = tk.Entry(slot_frame, textvariable = self.var_fixed_price)
-        fixed_price_register = slot_frame.register(chkNumber)
-        fixed_price_input.config(validate = "key", validatecommand = (slot_register, "%P"))
+        fixed_price_input = tk.Entry(fixed_price_frame, textvariable = self.var_fixed_price)
+        #fixed_price_register = fixed_price_frame.register(chkNumber)
+        #fixed_price_input.config(validate = "key", validatecommand = (fixed_price_register, "%P"))
         fixed_price_input.pack(fill = tk.X)
 
         #Set Add Price Frame
         add_price_frame = tk.Frame(self)
         add_price_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
-        add_price_label = tk.Label(slot_frame, text = "Add Price: ", width = styleDict["labelLen"], anchor = tk.W)
+        add_price_label = tk.Label(add_price_frame, text = "Add Price: ", width = styleDict["labelLen"], anchor = tk.W)
         add_price_label.pack(side = tk.LEFT)
         self.var_add_price = StringVar()
-        add_price_input = tk.Entry(slot_frame, textvariable = self.var_add_price)
-        add_price_register = slot_frame.register(chkNumber)
-        add_price_input.config(validate = "key", validatecommand = (slot_register, "%P"))
+        add_price_input = tk.Entry(add_price_frame, textvariable = self.var_add_price)
+        #add_price_register = add_price_frame.register(chkNumber)
+        #add_price_input.config(validate = "key", validatecommand = (add_price_register, "%P"))
         add_price_input.pack(fill = tk.X)
 
 
         #Set Day Price Frame
         day_price_frame = tk.Frame(self)
         day_price_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
-        day_price_label = tk.Label(slot_frame, text = "Add Price: ", width = styleDict["labelLen"], anchor = tk.W)
+        day_price_label = tk.Label(day_price_frame, text = "Add Price: ", width = styleDict["labelLen"], anchor = tk.W)
         day_price_label.pack(side = tk.LEFT)
-        self.var_dayd_price = StringVar()
-        day_price_input = tk.Entry(slot_frame, textvariable = self.var_day_price)
-        day_price_register = slot_frame.register(chkNumber)
-        day_price_input.config(validate = "key", validatecommand = (slot_register, "%P"))
+        self.var_day_price = StringVar()
+        day_price_input = tk.Entry(day_price_frame, textvariable = self.var_day_price)
+        #day_price_register = day_price_frame.register(chkNumber)
+        #day_price_input.config(validate = "key", validatecommand = (day_price_register, "%P"))
         day_price_input.pack(fill = tk.X)
 
         #Set Action Buttion Frame
@@ -202,7 +202,7 @@ class typeAddPage(tk.Frame):
             #Insert Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''INSERT INTO type ('Type_Name', 'Fixed_Price', `Add_Price`, `Day_Price`) VALUES(%s, %s, %s, %s);'''
+            query = '''INSERT INTO type (`Type_Name`, `Fixed_Price`, `Add_Price`,  `Day_Price`) VALUES(%s, %s, %s, %s);'''
             query_param = (tmp_type_name, tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input)
             cursor.execute(query, query_param)
             connection.commit()
@@ -212,15 +212,14 @@ class typeAddPage(tk.Frame):
             result = False
 
         if result:
-            msg = "type is added successfully"
+            msg = "Type is added successfully"
         else:
-            msg = "Some thing went wrong. Sorry for an inconvenience"
+            msg = "Something went wrong. Sorry for an inconvenience"
         popupMsg(msg)
 
 
 class TypeEditPage(tk.Frame):
     def __init__(self, master):
-
         #Initialize Frame
         tk.Frame.__init__(self, master)
         self.pack(fill = tk.BOTH, expand = True)
@@ -266,22 +265,18 @@ class TypeEditPage(tk.Frame):
         fixed_price_frame = tk.Frame(self)
         fixed_price_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         self.var_fixed_price = StringVar()
-        fixed_price_label = tk.Label(slot_frame, text = "Fixed Price: ", width = styleDict["labelLen"], anchor = tk.W)
+        fixed_price_label = tk.Label(fixed_price_frame, text = "Fixed Price: ", width = styleDict["labelLen"], anchor = tk.W)
         fixed_price_label.pack(side = tk.LEFT)
-        fixed_price_input = tk.Entry(slot_frame, textvariable = self.var_slot)
-        fixed_price_register = slot_frame.register(chkNumber)
-        fixed_price_input.config(validate = "key", validatecommand = (slot_register, "%P"))
+        fixed_price_input = tk.Entry(fixed_price_frame, textvariable = self.var_fixed_price)
         fixed_price_input.pack(fill = tk.X)
 
-        #Set Slot Frame
+        #Set Add Price Frame
         add_price_frame = tk.Frame(self)
         add_price_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         self.var_add_price = StringVar()
         add_price_label = tk.Label(add_price_frame, text = "Add-Ons Price: ", width = styleDict["labelLen"], anchor = tk.W)
         add_price_label.pack(side = tk.LEFT)
         add_price_input = tk.Entry(add_price_frame, textvariable = self.var_add_price)
-        add_price_register = add_price_frame.register(chkNumber)
-        add_price_input.config(validate = "key", validatecommand = (add_price_register, "%P"))
         add_price_input.pack(fill = tk.X)
 
         #Set Day Price Frame
@@ -291,18 +286,16 @@ class TypeEditPage(tk.Frame):
         day_price_label = tk.Label(day_price_frame, text = "Day Price: ", width = styleDict["labelLen"], anchor = tk.W)
         day_price_label.pack(side = tk.LEFT)
         day_price_input = tk.Entry(day_price_frame, textvariable = self.var_day_price)
-        day_price_register = day_price_frame.register(chkNumber)
-        day_price_input.config(validate = "key", validatecommand = (day_price_register, "%P"))
         day_price_input.pack(fill = tk.X)
 
         #Set Action Buttion Frame
         act_button_frame = tk.Frame(self)
         act_button_frame.pack(padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         back_button = tk.Button(act_button_frame, text = "Back", width = styleDict["buttonWidth"],
-                                command = lambda: master.switch_frame(typeMngPage))
+                                command = lambda: master.switch_frame(TypeMngPage))
         back_button.pack(side = tk.RIGHT)
         confirm_button = tk.Button(act_button_frame, text = "Confirm", width = styleDict["buttonWidth"],
-                                command = self.edittype)
+                                command = self.editType)
         confirm_button.pack(side = tk.RIGHT, fill = tk.X, padx = styleDict["inlinePadding"])
 
     def callback(self, event):
@@ -311,15 +304,16 @@ class TypeEditPage(tk.Frame):
     def setCurrentTypeData(self):
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT l.Type_Name `Type Name`, l.Slot, l.`Status`
-                                FROM type AS l;'''
+        query = '''SELECT t.Type_Name `Type Name`, t.Fixed_Price, t.Add_Price, t.Day_Price
+                                FROM type AS t
+                                WHERE `Type_Name` = %s;'''
         cursor.execute(query, self.var_type_name.get())
         for row in cursor.fetchall():
-            self.var_city_name.set(row[1])
-            self.var_slot.set(row[2])
-            self.var_status.set(row[3])
+            self.var_fixed_price.set(row[1])
+            self.var_add_price.set(row[2])
+            self.var_day_price.set(row[3])
 
-    def edittype(self):
+    def editType(self):
         #Get All Data From User Control
         tmp_type_name = self.var_type_name.get()
         tmp_fixed_price_input = self.var_fixed_price.get()
@@ -346,11 +340,12 @@ class TypeEditPage(tk.Frame):
             connection.commit()
             disconnectDB(connection)
             result = True
+
         except:
             result = False
 
         if result:
-            msg = "type is updated successfully"
+            msg = "Type is updated successfully"
         else:
-            msg = "Some thing went wrong. Sorry for an inconvenience"
+            msg = "Something went wrong. Sorry for an inconvenience"
         popupMsg(msg)

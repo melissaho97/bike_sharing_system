@@ -106,7 +106,7 @@ class TypeMngPage(tk.Frame):
         connection = connectDB()
         cursor = connection.cursor()
         query = '''SELECT t.ID ID, t.Type_Name `Type Name`,
-                                t.Fixed_Price 'Fixed_Price', t.Add_Price `Add-Ons Price`, t.Day_Price `Day Price`
+                                t.Fixed_Price 'Fixed Price', t.Add_Price `Add-Ons Price`, t.Day_Price `Day Price`
                                 FROM type AS t'''
         sql = pd.read_sql_query(query, connection, params = None)
         type_df = pd.DataFrame(sql, columns = ['ID','Type Name', 'Fixed Price', 'Add-Ons Price', 'Day Price'])
@@ -185,7 +185,7 @@ class TypeAddPage(tk.Frame):
         act_button_frame = tk.Frame(self)
         act_button_frame.pack(padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         back_button = tk.Button(act_button_frame, text = "Back", width = styleDict["buttonWidth"],
-                                command = lambda: master.switch_frame(typeMngPage))
+                                command = lambda: master.switch_frame(TypeMngPage))
         back_button.pack(side = tk.RIGHT)
         confirm_button = tk.Button(act_button_frame, text = "Confirm", width = styleDict["buttonWidth"],
                                 command = self.addtype)

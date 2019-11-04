@@ -17,7 +17,7 @@ from pandastable import Table, TableModel
 import CMT_CITY
 
 def init_styleSheet():
-    global styleDict 
+    global styleDict
     styleDict = {}
     styleDict["Title"] = "CMT - Bike"
     styleDict["windowSize"] = "1024x768"
@@ -39,13 +39,13 @@ def init_styleSheet():
 
 class BackEndHomePage(tk.Frame):
     def __init__(self, master):
-        
+
         #Initialize Frame
         tk.Frame.__init__(self, master)
 
         #Initialize Style Dict
         styleDict = init_styleSheet()
-        
+
         #Display Back End Home Page
         tk.Label(self, text="BackEnd Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
         tk.Button(self, text="Go to Type Management Page",

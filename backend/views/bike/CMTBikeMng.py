@@ -369,7 +369,7 @@ class BikeEditPage(tk.Frame):
                         INNER JOIN city AS c ON b.City_ID = c.ID
                         INNER JOIN type AS t ON b.Type_ID = t.ID
                         WHERE b.ID = %s;'''
-        cursor.execute(query, int(self.var_bike_id.get()))
+        cursor.execute(query, self.var_bike_id.get())
         for row in cursor.fetchall():
             self.var_condition.set(row[0])
             self.var_location_name.set(row[2].upper()+' - '+row[1])
@@ -377,22 +377,28 @@ class BikeEditPage(tk.Frame):
     
     def editBike(self):
         #Get All Data From User Control
+        tmp_bike_id = self.var_bike_id.get()
+        
         tmp_condition = self.var_condition.get()
+        
         tmp_string = self.var_location_name.get().split(sep=' ')
         tmp_location_name = tmp_string[2]
         tmp_type_name = self.var_type_name.get()
         
+        print(tmp_type_name)
+
         try:
             #Get More Data from DB
             connection = connectDB()
             cursor = connection.cursor()
             # >> Get Location ID
-            query = '''SELECT ID，City_ID FROM location WHERE `Zone_Name` = %s;'''
+            query = '''SELECT ID, Zone_Name, City_ID FROM location WHERE Zone_Name = %s;'''
             cursor.execute(query, tmp_location_name)
             for row in cursor.fetchall():
                 tmp_location_id = row[0]  
-                tmp_city_id = row[1]
+                tmp_city_id = row[2]
             disconnectDB(connection)
+
             
             #Get More Data from DB
             connection = connectDB()
@@ -404,11 +410,13 @@ class BikeEditPage(tk.Frame):
                 tmp_type_id = row[0]  
             disconnectDB(connection)
         
+            
+            
             #Update Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''UPDATE bike SET `Condition` = %s, `Location_ID` = %s, City_ID = %s, Updated_At = NOW(), Type_ID = %s;'''
-            query_param = (tmp_condition, tmp_location_id, tmp_city_id, tmp_type_id)
+            query = '''UPDATE bike SET `Condition` = %s, `Location_ID` = %s, City_ID = %s, Updated_At = NOW(), Type_ID = %s WHERE ID = %s;'''
+            query_param = (tmp_condition, tmp_location_id, tmp_city_id, tmp_type_id, tmp_bike_id)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)

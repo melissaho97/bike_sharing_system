@@ -8,11 +8,6 @@ Created on Fri Oct 25 19:21:48 2019
 
 #import libraries
 import tkinter as tk
-from tkinter import *
-from tkinter import ttk
-import pandas as pd
-import pymysql
-from pandastable import Table, TableModel
 
 #import other pages
 import Account

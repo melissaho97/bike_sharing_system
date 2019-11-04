@@ -66,7 +66,7 @@ CREATE TABLE `bike`  (
 DROP TABLE IF EXISTS `type`;
 CREATE TABLE `type`  (
   `ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `Type_Name` varchar(255) NOT NULL,
+  `Type_Name` varchar(255) NOT NULL UNIQUE,
   `Fixed_Price` double(10, 2),
   `Add_Price` double(10, 2),
   `Day_Price` double(10, 2),
@@ -82,7 +82,7 @@ DROP TABLE IF EXISTS `customer`;
 CREATE TABLE `customer`  (
   `ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `Amount_Balance` double(10, 2),
-  `Phone_Number` int(11),
+  `Phone_Number` varchar(255),
   `Full_Name` varchar(255) NOT NULL,
   `Email` varchar(255),
   `Username` varchar(255) NOT NULL UNIQUE,

@@ -89,6 +89,8 @@ class AccountMngPage(tk.Frame):
         self.var_username = StringVar()
         username_label = tk.Label(username_frame, text = "Username: ", width = styleDict["labelLen"], anchor = tk.W)
         username_label.pack(side = tk.LEFT)
+        username_label = tk.Label(username_frame, text = self.var_username, anchor = tk.W)
+        username_label.pack(side = tk.RIGHT)
         
         # Full Name
         name_frame = tk.Frame(self)

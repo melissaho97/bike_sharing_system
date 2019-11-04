@@ -7,11 +7,6 @@ Created on Fri Oct 25 19:18:57 2019
 """
 #import libraries
 import tkinter as tk
-from tkinter import *
-from tkinter import ttk
-import pandas as pd
-import pymysql
-from pandastable import Table, TableModel
 
 #import other pages
 import BackEnd
@@ -38,14 +33,14 @@ def init_styleSheet():
     styleDict["TabHeaderBgColor"] = "#4B96E9"
     return(styleDict)
 
-class BackEndApp(tk.Tk):
+class BackendApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self._frame = None
         self.geometry(styleDict["windowSize"])
         self.title(styleDict["Title"])
         self.configure(background = "white")
-        self.switch_frame(BackEnd.BackEndHomePage)
+        self.switch_frame(BackEnd.BackendHomePage)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
@@ -56,5 +51,5 @@ class BackEndApp(tk.Tk):
 
 if __name__ == "__main__":
     styleDict = init_styleSheet()
-    app = BackEndApp()
+    app = BackendApp()
     app.mainloop()

@@ -154,8 +154,6 @@ class TypeAddPage(tk.Frame):
         fixed_price_label.pack(side = tk.LEFT)
         self.var_fixed_price = StringVar()
         fixed_price_input = tk.Entry(fixed_price_frame, textvariable = self.var_fixed_price)
-        #fixed_price_register = fixed_price_frame.register(chkNumber)
-        #fixed_price_input.config(validate = "key", validatecommand = (fixed_price_register, "%P"))
         fixed_price_input.pack(fill = tk.X)
 
         #Set Add Price Frame
@@ -165,10 +163,7 @@ class TypeAddPage(tk.Frame):
         add_price_label.pack(side = tk.LEFT)
         self.var_add_price = StringVar()
         add_price_input = tk.Entry(add_price_frame, textvariable = self.var_add_price)
-        #add_price_register = add_price_frame.register(chkNumber)
-        #add_price_input.config(validate = "key", validatecommand = (add_price_register, "%P"))
         add_price_input.pack(fill = tk.X)
-
 
         #Set Day Price Frame
         day_price_frame = tk.Frame(self)
@@ -177,8 +172,6 @@ class TypeAddPage(tk.Frame):
         day_price_label.pack(side = tk.LEFT)
         self.var_day_price = StringVar()
         day_price_input = tk.Entry(day_price_frame, textvariable = self.var_day_price)
-        #day_price_register = day_price_frame.register(chkNumber)
-        #day_price_input.config(validate = "key", validatecommand = (day_price_register, "%P"))
         day_price_input.pack(fill = tk.X)
 
         #Set Action Buttion Frame
@@ -197,13 +190,14 @@ class TypeAddPage(tk.Frame):
         tmp_fixed_price_input = self.var_fixed_price.get()
         tmp_add_price_input = self.var_add_price.get()
         tmp_day_price_input = self.var_day_price.get()
+        tmp_operator_id = 1
 
         try:
             #Insert Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''INSERT INTO type (`Type_Name`, `Fixed_Price`, `Add_Price`,  `Day_Price`) VALUES(%s, %s, %s, %s);'''
-            query_param = (tmp_type_name, tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input)
+            query = '''INSERT INTO type (`Type_Name`, `Fixed_Price`, `Add_Price`,  `Day_Price`, Created_At, Updated_At, `Last_Operator_ID`) VALUES(%s, %s, %s, %s, NOW(), NOW(), %s);'''
+            query_param = (tmp_type_name, tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input, tmp_operator_id)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)
@@ -238,7 +232,7 @@ class TypeEditPage(tk.Frame):
         menu_label = tk.Label(menu_frame, text = "Edit Type: ", font = ('Arial', 18), anchor = tk.W)
         menu_label.pack(side = tk.LEFT)
 
-        #Set type Name Frame
+        #Set Type Name Frame
         type_name_frame = tk.Frame(self)
         type_name_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
         type_name_label = tk.Label(type_name_frame, text = "Type Name: ", width = styleDict["labelLen"], anchor = tk.W)
@@ -257,6 +251,7 @@ class TypeEditPage(tk.Frame):
         #Set type Combobox
         self.var_type_name = StringVar()
         type_name_input = ttk.Combobox(type_name_frame, values = type_list, state='readonly', textvariable = self.var_type_name)
+        type_name_input.set('Select Type Name')
         # >> Bind onchange event to type combobox
         type_name_input.bind("<<ComboboxSelected>>", self.callback)
         type_name_input.pack(fill = tk.X)
@@ -304,7 +299,7 @@ class TypeEditPage(tk.Frame):
     def setCurrentTypeData(self):
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT t.Type_Name `Type Name`, t.Fixed_Price, t.Add_Price, t.Day_Price
+        query = '''SELECT t.Type_Name, t.Fixed_Price, t.Add_Price, t.Day_Price
                                 FROM type AS t
                                 WHERE `Type_Name` = %s;'''
         cursor.execute(query, self.var_type_name.get())
@@ -319,23 +314,24 @@ class TypeEditPage(tk.Frame):
         tmp_fixed_price_input = self.var_fixed_price.get()
         tmp_add_price_input = self.var_add_price.get()
         tmp_day_price_input = self.var_day_price.get()
-
+        tmp_operator_id = 1
+        
         try:
             #Get More Data from DB
             connection = connectDB()
             cursor = connection.cursor()
-            # >> Get type ID
+            # >> Get Location ID
             query = '''SELECT ID, Type_Name FROM type WHERE `Type_Name` = %s;'''
             cursor.execute(query, tmp_type_name)
             for row in cursor.fetchall():
-                tmp_type_id = row[0]
+                tmp_type_id = row[0]            
             disconnectDB(connection)
-
+            
             #Update Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''UPDATE type SET 'Fixed_Price' = %s, `Add_Price` = %s, 'Day_Price' = %s WHERE ID = %s;'''
-            query_param = (tmp_type_name, tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input)
+            query = '''UPDATE type SET Fixed_Price = %s, Add_Price = %s, Day_Price = %s, Updated_At = NOW(), Last_Operator_ID = %s WHERE ID = %s;'''
+            query_param = (tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input, tmp_operator_id, tmp_type_id)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)

@@ -8,11 +8,7 @@ Created on Fri Oct 25 19:21:48 2019
 
 #import libraries
 import tkinter as tk
-from tkinter import *
-from tkinter import ttk
-import pandas as pd
 import pymysql
-from pandastable import Table, TableModel
 
 #import other pages
 import CMTTypeMng
@@ -38,7 +34,7 @@ def init_styleSheet():
     styleDict["TabHeaderBgColor"] = "#4B96E9"
     return(styleDict)
 
-class BackEndHomePage(tk.Frame):
+class BackendHomePage(tk.Frame):
     def __init__(self, master):
         
         #Initialize Frame
@@ -48,6 +44,6 @@ class BackEndHomePage(tk.Frame):
         styleDict = init_styleSheet()
         
         #Display Back End Home Page
-        tk.Label(self, text="BackEnd Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
+        tk.Label(self, text="Backend Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
         tk.Button(self, text="Go to Type Management Page",
                   command = lambda: master.switch_frame(CMTTypeMng.TypeMngPage)).pack()

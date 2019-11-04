@@ -65,7 +65,6 @@ def disconnectDB(connection):
     connection.close()
     
 class AccountMngPage(tk.Frame):
-    
     def __init__(self, master):
         
         #Initialize Frame
@@ -89,8 +88,10 @@ class AccountMngPage(tk.Frame):
         self.var_username = StringVar()
         username_label = tk.Label(username_frame, text = "Username: ", width = styleDict["labelLen"], anchor = tk.W)
         username_label.pack(side = tk.LEFT)
-        username_label = tk.Label(username_frame, text = self.var_username, anchor = tk.W)
-        username_label.pack(side = tk.RIGHT)
+        username_input = tk.Label(username_frame, textvariable = self.var_username)
+        username_input.pack(side = tk.LEFT)
+        #username_label = tk.Label(username_frame, text = self.var_username,  anchor = tk.W)
+        #username_label.pack(side = tk.RIGHT)
         
         # Full Name
         name_frame = tk.Frame(self)
@@ -102,7 +103,7 @@ class AccountMngPage(tk.Frame):
         # Get Username and Name from DB
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT ID, Full_Name `Full Name` FROM customer WHERE ID=1;'''
+        query = '''SELECT ID, Full_Name `Full Name` FROM customer;'''
         cursor.execute(query)
         name_list = []
         for row in cursor.fetchall():
@@ -147,6 +148,7 @@ class AccountMngPage(tk.Frame):
         card_no_label = tk.Label(card_no_frame, text = "Card No.: ", width = styleDict["labelLen"], anchor = tk.W)
         card_no_label.pack(side = tk.LEFT)
         card_no_input = tk.Entry(card_no_frame, textvariable = self.var_card_no)
+        card_no_input.insert(0, 'XXXX XXXX XXXX XXXX')
         card_no_input.pack(fill = tk.X)
         
         # Expiry Date
@@ -156,6 +158,7 @@ class AccountMngPage(tk.Frame):
         date_label = tk.Label(date_frame, text = "Expiry Date: ", width = styleDict["labelLen"], anchor = tk.W)
         date_label.pack(side = tk.LEFT)
         date_input = tk.Entry(date_frame, textvariable = self.var_date)
+        date_input.insert(0, 'MM/YYYY')
         date_input.pack(fill = tk.X)
         
         # CVV
@@ -165,6 +168,7 @@ class AccountMngPage(tk.Frame):
         cvv_label = tk.Label(cvv_frame, text = "CVV: ", width = styleDict["labelLen"], anchor = tk.W)
         cvv_label.pack(side = tk.LEFT)
         cvv_input = tk.Entry(cvv_frame, textvariable = self.var_cvv)
+        cvv_input.insert(0, 'xxx')
         cvv_input.pack(fill = tk.X)
         
         # --------------------------------------------------------------------------------------------
@@ -175,12 +179,12 @@ class AccountMngPage(tk.Frame):
         
         # Save Button
         save_button = tk.Button(act_button_frame, text = "Save", width = styleDict["buttonWidth"],
-                                command = self.editType)
-        save_button.pack(side = tk.RIGHT, fill = tk.X, padx = styleDict["inlinePadding"])
+                                command = self.editAccount)
+        save_button.pack(side = tk.LEFT, fill = tk.X, padx = styleDict["inlinePadding"])
         
         # Cancel Button
         cancel_button = tk.Button(act_button_frame, text = "Cancel", width = styleDict["buttonWidth"],
-                                command = lambda: master.switch_frame(TypeMngPage))
+                                command = lambda: master.switch_frame(AccountMngPage))
         cancel_button.pack(side = tk.RIGHT)
 
     def callback(self, event):
@@ -189,43 +193,44 @@ class AccountMngPage(tk.Frame):
     def setCurrentTypeData(self):
         connection = connectDB()
         cursor = connection.cursor()
-        query = '''SELECT cust.Username `Username`, cust.Phone_Number `Phone Number`, cust.Full_Name `Full Name`, 
-                    cust.Email `Email Address`, cust.Card_No `Card No.`, cust.Expired_Date `Expiry Date`, cust.CVV
-                    FROM customer AS cust
-                    WHERE `Username` = %s;'''
-        cursor.execute(query, self.var_username_get())
+        query = '''SELECT Username, Phone_Number, Full_Name, Email, Card_No, Expired_Date, CVV
+                    FROM customer WHERE Full_Name = %s;'''
+        cursor.execute(query, self.var_name.get())
+        
         for row in cursor.fetchall():
             self.var_username.set(row[0])
-            self.var_phone.set(row[0])
-            self.var_name.set(row[1])
-            self.var_email.set(row[2])
+            self.var_phone.set(row[1])
+            self.var_name.set(row[2])
+            self.var_email.set(row[3])
             self.var_card_no.set(row[4])
             self.var_date.set(row[5])
             self.var_cvv.set(row[6])
 
-    def editType(self):
+    def editAccount(self):
         #Get All Data From User Control
-        tmp_type_name = self.var_type_name.get()
-        tmp_fixed_price_input = self.var_fixed_price.get()
-        tmp_add_price_input = self.var_add_price.get()
-        tmp_day_price_input = self.var_day_price.get()
-
+        tmp_username = self.var_username.get()
+        #tmp_full_name = self.var_name.get()
+        tmp_phone = int(self.var_phone.get())
+        tmp_email = self.var_email.get()
+        tmp_card_no = int(self.var_card_no.get())
+        tmp_date = self.var_date.get()
+        tmp_cvv = int(self.var_cvv.get())
+        
         try:
             #Get More Data from DB
             connection = connectDB()
             cursor = connection.cursor()
-            # >> Get type ID
-            query = '''SELECT ID, Type_Name FROM type WHERE `Type_Name` = %s;'''
-            cursor.execute(query, tmp_type_name)
+            query = '''SELECT ID, Username FROM customer WHERE `Username` = %s;'''
+            cursor.execute(query, tmp_username)
             for row in cursor.fetchall():
-                tmp_type_id = row[0]
+                tmp_user_id = row[0]
             disconnectDB(connection)
-
+            
             #Update Data into DB
             connection = connectDB()
             cursor = connection.cursor()
-            query = '''UPDATE type SET 'Fixed_Price' = %s, `Add_Price` = %s, 'Day_Price' = %s WHERE ID = %s;'''
-            query_param = (tmp_type_name, tmp_fixed_price_input, tmp_add_price_input, tmp_day_price_input)
+            query = '''UPDATE customer SET Phone_Number = %s, Email = %s, Card_No = %s, Expired_Date = %s, CVV = %s WHERE ID = %s;'''
+            query_param = (tmp_phone, tmp_email, tmp_card_no, tmp_date, tmp_cvv, tmp_user_id)
             cursor.execute(query, query_param)
             connection.commit()
             disconnectDB(connection)
@@ -235,7 +240,7 @@ class AccountMngPage(tk.Frame):
             result = False
 
         if result:
-            msg = "Type is updated successfully"
+            msg = "Account is updated successfully"
         else:
             msg = "Something went wrong. Sorry for an inconvenience"
         popupMsg(msg)

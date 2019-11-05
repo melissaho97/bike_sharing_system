@@ -18,7 +18,7 @@ import BackEnd
 
 
 def init_styleSheet():
-    global styleDict 
+    global styleDict
     styleDict = {}
     styleDict["Title"] = "CMT - Bike"
     styleDict["windowSize"] = "1024x768"

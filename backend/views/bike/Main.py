@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Oct 25 19:21:48 2019
+Created on Fri Oct 25 19:18:57 2019
 
-@author: wang
+@author: FlyingPIG
 """
 #import libraries
 import tkinter as tk
@@ -14,10 +14,11 @@ import pymysql
 from pandastable import Table, TableModel
 
 #import other pages
-import CMT_CITY
+import BackEnd
+
 
 def init_styleSheet():
-    global styleDict
+    global styleDict 
     styleDict = {}
     styleDict["Title"] = "CMT - Bike"
     styleDict["windowSize"] = "1024x768"
@@ -37,16 +38,23 @@ def init_styleSheet():
     styleDict["TabHeaderBgColor"] = "#4B96E9"
     return(styleDict)
 
-class BackEndHomePage(tk.Frame):
-    def __init__(self, master):
+class BackEndApp(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self._frame = None
+        self.geometry(styleDict["windowSize"])
+        self.title(styleDict["Title"])
+        self.configure(background = "white")
+        self.switch_frame(BackEnd.BackEndHomePage)
 
-        #Initialize Frame
-        tk.Frame.__init__(self, master)
+    def switch_frame(self, frame_class):
+        new_frame = frame_class(self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack()
 
-        #Initialize Style Dict
-        styleDict = init_styleSheet()
-
-        #Display Back End Home Page
-        tk.Label(self, text="BackEnd Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
-        tk.Button(self, text="Go to Type Management Page",
-                  command = lambda: master.switch_frame(CMT_CITY.CityMngPage)).pack()
+if __name__ == "__main__":
+    styleDict = init_styleSheet()
+    app = BackEndApp()
+    app.mainloop()

@@ -383,17 +383,22 @@ class BikeEditPage(tk.Frame):
         
         tmp_string = self.var_location_name.get().split(sep=' ')
         tmp_location_name = tmp_string[2]
+        
         tmp_type_name = self.var_type_name.get()
         
-        print(tmp_type_name)
+        tmp_city_name = tmp_string[0].lower()
 
         try:
             #Get More Data from DB
             connection = connectDB()
             cursor = connection.cursor()
             # >> Get Location ID
-            query = '''SELECT ID, Zone_Name, City_ID FROM location WHERE Zone_Name = %s;'''
-            cursor.execute(query, tmp_location_name)
+            query = '''SELECT l.ID, l.Zone_Name, l.City_ID, c.City_Name
+                            FROM location AS l
+                            INNER JOIN city AS c ON l.City_ID = c.ID
+                            WHERE c.City_Name = %s AND l.Zone_Name = %s;'''
+            query_params = (tmp_city_name, tmp_location_name)
+            cursor.execute(query, query_params)
             for row in cursor.fetchall():
                 tmp_location_id = row[0]  
                 tmp_city_id = row[2]

@@ -41,8 +41,20 @@ class BackendHomePage(tk.Frame):
 
         #Initialize Style Dict
         styleDict = init_styleSheet()
+        h_frame = tk.Frame(self, height = styleDict["topPadding"])
+        h_frame.pack(fill = tk.X, padx = styleDict["xPadding"], pady = styleDict["yPadding"])
+        title = tk.Label(h_frame, text='CMT-Bike (Staff ONLY)', font=("Arial, 30"))
+        title.pack(side=tk.LEFT, padx=30, pady=70)
+
+        menu_frame_1 = tk.Frame(self)
+        menu_frame_1.pack(fill=tk.X, padx=styleDict["xPadding"], pady=styleDict["yPadding"])
+        a = tk.Button(menu_frame_1, text='Report Management', font=("Arial, 25"), width=15, height=4,
+                      command=lambda: master.switch_frame(Report.ReportMngPage))
+
+        a.pack(side=tk.LEFT, padx=30, pady=30)
+        
         
         #Display Back End Home Page
-        tk.Label(self, text="Backend Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
-        tk.Button(self, text="Go to Report Management Page",
-                  command = lambda: master.switch_frame(Report.ReportMngPage)).pack()
+        #tk.Label(self, text="Backend Home Page", font=(styleDict["fontType"], styleDict["fontSize"], styleDict["fontStyle"])).pack(side="top", fill="x", pady=5)
+        #tk.Button(self, text="Go to Report Management Page",
+        #          command = lambda: master.switch_frame(Report.ReportMngPage)).pack()
